@@ -1,6 +1,7 @@
 package com.aliya.scanner;
 
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.support.annotation.ColorInt;
 import android.text.TextUtils;
@@ -32,6 +33,9 @@ public class QRCode {
     private int mColorBlack = Color.BLACK;
     private int mColorWhite = Color.WHITE;
     private Bitmap.Config mConfig = Bitmap.Config.ARGB_8888;
+
+    private Bitmap mLogoBitmap;
+    private float mLogoScale;
 
     public QRCode(String content, int width, int height) {
         this.mContent = content;
@@ -79,6 +83,16 @@ public class QRCode {
         return this;
     }
 
+    public QRCode setLogoBitmap(Bitmap logoBitmap) {
+        mLogoBitmap = logoBitmap;
+        return this;
+    }
+
+    public QRCode setLogoScale(float logoScale) {
+        mLogoScale = logoScale;
+        return this;
+    }
+
     public Bitmap createQRCode() {
         if (TextUtils.isEmpty(mContent)) {
             return null;
@@ -118,11 +132,37 @@ public class QRCode {
             /** 4.创建Bitmap对象,根据像素数组设置Bitmap每个像素点的颜色值,并返回Bitmap对象 */
             Bitmap bitmap = Bitmap.createBitmap(mWidth, mHeight, mConfig);
             bitmap.setPixels(pixels, 0, mWidth, 0, 0, mWidth, mHeight);
+
+            drawLogo(bitmap, mLogoBitmap, mLogoScale);
+
             return bitmap;
         } catch (WriterException e) {
             e.printStackTrace();
             return null;
         }
+    }
+
+    private void drawLogo(Bitmap qrCode, Bitmap logo, float scale) {
+        if (qrCode == null || logo == null) {
+            return;
+        }
+        // 传值不合法时使用0.2f
+        if (scale <= 0F || scale > 1F) {
+            scale = 0.2F;
+        }
+
+        int qrCodeWidth = qrCode.getWidth();
+        int qrCodeHeight = qrCode.getHeight();
+        int logoWidth = logo.getWidth();
+        int logoHeight = logo.getHeight();
+
+        float scaleWidth = qrCodeWidth * scale / logoWidth;
+        float scaleHeight = qrCodeHeight * scale / logoHeight;
+
+        Canvas canvas = new Canvas(qrCode);
+        canvas.scale(scaleWidth, scaleHeight, qrCodeWidth / 2, qrCodeHeight / 2);
+        canvas.drawBitmap(logo, qrCodeWidth / 2 - logoWidth / 2,
+                qrCodeHeight / 2 - logoHeight / 2, null);
     }
 
 }
