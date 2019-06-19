@@ -37,6 +37,8 @@ public class QRCode {
     private Bitmap mLogoBitmap;
     private float mLogoScale;
 
+    private Bitmap mBitmapBlack;
+
     public QRCode(String content, int width, int height) {
         this.mContent = content;
         this.mWidth = width;
@@ -93,6 +95,11 @@ public class QRCode {
         return this;
     }
 
+    public QRCode setBitmapBlack(Bitmap bitmapBlack) {
+        mBitmapBlack = Bitmap.createScaledBitmap(bitmapBlack, mWidth, mHeight, false);
+        return this;
+    }
+
     public Bitmap createQRCode() {
         if (TextUtils.isEmpty(mContent)) {
             return null;
@@ -123,7 +130,11 @@ public class QRCode {
             for (int y = 0; y < mHeight; y++) {
                 for (int x = 0; x < mWidth; x++) {
                     if (bitMatrix.get(x, y)) {
-                        pixels[y * mWidth + x] = mColorBlack; // 黑色色块像素设置
+                        if (mBitmapBlack != null) {
+                            pixels[y * mWidth + x] = mBitmapBlack.getPixel(x, y);
+                        } else {
+                            pixels[y * mWidth + x] = mColorBlack; // 黑色色块像素设置
+                        }
                     } else {
                         pixels[y * mWidth + x] = mColorWhite; // 白色色块像素设置
                     }
