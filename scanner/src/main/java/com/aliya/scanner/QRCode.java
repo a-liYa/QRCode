@@ -27,6 +27,7 @@ public class QRCode {
     private int mWidth;
     private int mHeight;
 
+    private int mVersion;
     private int mMargin;
     private String mCharacterSet = "UTF-8";
     private ErrorCorrectionLevel mErrorCorrectionLevel = ErrorCorrectionLevel.H;
@@ -43,6 +44,17 @@ public class QRCode {
         this.mContent = content;
         this.mWidth = width;
         this.mHeight = height;
+    }
+
+    /**
+     * Version n 是 (21 + 4*(n - 1)) x (21 + 4*(n - 1)) 的矩阵
+     * @param version [1, 40]
+     * @return this
+     */
+    public QRCode setVersion(int version) {
+        if (version >= 1 && version <= 40)
+            mVersion = version;
+        return this;
     }
 
     /*
@@ -120,6 +132,10 @@ public class QRCode {
             }
             // 空白边距设置
             hints.put(EncodeHintType.MARGIN, String.valueOf(mMargin));
+
+            if (mVersion != 0) {
+                hints.put(EncodeHintType.QR_VERSION, String.valueOf(mVersion));
+            }
 
             /** 2.将配置参数传入到QRCodeWriter的encode方法生成BitMatrix(位矩阵)对象 */
             BitMatrix bitMatrix = new QRCodeWriter().encode(

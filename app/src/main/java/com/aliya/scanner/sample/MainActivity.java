@@ -2,9 +2,6 @@ package com.aliya.scanner.sample;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.AdaptiveIconDrawable;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.RequiresApi;
@@ -42,9 +39,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                 Bitmap logo  = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_a_liya);
                 Log.e("TAG", "onClick: " + logo);
-                mIvQRCode_.setImageBitmap(new QRCode("http://www.baidu.com", 800, 800)
-                        .setMargin(1)
-                        .setLogoBitmap(logo)
+                mIvQRCode_.setImageBitmap(new QRCode("1", 800, 800)
+                        .setMargin(0)
+                        .setVersion(15)
+//                        .setLogoBitmap(logo)
                         .createQRCode());
                 break;
         }
