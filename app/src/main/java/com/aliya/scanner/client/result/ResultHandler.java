@@ -23,7 +23,6 @@ import com.aliya.scanner.client.Intents;
 import com.aliya.scanner.client.LocaleManager;
 import com.aliya.scanner.client.PreferencesActivity;
 import com.aliya.scanner.sample.R;
-import com.aliya.scanner.client.book.SearchBookContentsActivity;
 import com.google.zxing.client.result.ParsedResult;
 import com.google.zxing.client.result.ParsedResultType;
 import com.google.zxing.client.result.ResultParser;
@@ -426,7 +425,7 @@ public abstract class ResultHandler {
 
   final void searchBookContents(String isbnOrUrl) {
     Intent intent = new Intent(Intents.SearchBookContents.ACTION);
-    intent.setClassName(activity, SearchBookContentsActivity.class.getName());
+//    intent.setClassName(activity, SearchBookContentsActivity.class.getName());
     putExtra(intent, Intents.SearchBookContents.ISBN, isbnOrUrl);
     launchIntent(intent);
   }
