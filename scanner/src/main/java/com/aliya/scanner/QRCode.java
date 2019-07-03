@@ -8,12 +8,13 @@ import android.text.TextUtils;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
+import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
-import com.google.zxing.qrcode.QRCodeWriter;
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 
 import java.util.Hashtable;
+import java.util.Map;
 
 /**
  * QRCode, 用于生成二维码
@@ -121,7 +122,7 @@ public class QRCode {
         }
         try {
             /** 1.设置二维码相关配置 */
-            Hashtable<EncodeHintType, String> hints = new Hashtable<>();
+            Map<EncodeHintType, String> hints = new Hashtable<>();
             // 字符转码格式设置
             if (!TextUtils.isEmpty(mCharacterSet)) {
                 hints.put(EncodeHintType.CHARACTER_SET, mCharacterSet);
@@ -138,27 +139,30 @@ public class QRCode {
             }
 
             /** 2.将配置参数传入到QRCodeWriter的encode方法生成BitMatrix(位矩阵)对象 */
-            BitMatrix bitMatrix = new QRCodeWriter().encode(
+            BitMatrix result = new MultiFormatWriter().encode(
                     mContent, BarcodeFormat.QR_CODE, mWidth, mHeight, hints);
 
             /** 3.创建像素数组,并根据BitMatrix(位矩阵)对象为数组元素赋颜色值 */
-            int[] pixels = new int[mWidth * mHeight];
-            for (int y = 0; y < mHeight; y++) {
-                for (int x = 0; x < mWidth; x++) {
-                    if (bitMatrix.get(x, y)) {
+            int width = result.getWidth();
+            int height = result.getHeight();
+            int[] pixels = new int[width * height];
+            for (int y = 0; y < height; y++) {
+                for (int x = 0; x < width; x++) {
+                    int offset = y * width;
+                    if (result.get(x, y)) {
                         if (mBitmapBlack != null) {
-                            pixels[y * mWidth + x] = mBitmapBlack.getPixel(x, y);
+                            pixels[offset + x] = mBitmapBlack.getPixel(x, y);
                         } else {
-                            pixels[y * mWidth + x] = mColorBlack; // 黑色色块像素设置
+                            pixels[offset + x] = mColorBlack; // 黑色色块像素设置
                         }
                     } else {
-                        pixels[y * mWidth + x] = mColorWhite; // 白色色块像素设置
+                        pixels[offset + x] = mColorWhite; // 白色色块像素设置
                     }
                 }
             }
             /** 4.创建Bitmap对象,根据像素数组设置Bitmap每个像素点的颜色值,并返回Bitmap对象 */
-            Bitmap bitmap = Bitmap.createBitmap(mWidth, mHeight, mConfig);
-            bitmap.setPixels(pixels, 0, mWidth, 0, 0, mWidth, mHeight);
+            Bitmap bitmap = Bitmap.createBitmap(width, height, mConfig);
+            bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
 
             drawLogo(bitmap, mLogoBitmap, mLogoScale);
 
