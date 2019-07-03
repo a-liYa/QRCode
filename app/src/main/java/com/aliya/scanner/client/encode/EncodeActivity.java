@@ -16,32 +16,27 @@
 
 package com.aliya.scanner.client.encode;
 
-import android.graphics.Point;
-import android.view.Display;
-import android.view.MenuInflater;
-import android.view.WindowManager;
-import com.google.zxing.WriterException;
-import com.aliya.scanner.client.Contents;
-import com.aliya.scanner.client.FinishListener;
-import com.aliya.scanner.client.Intents;
-import com.aliya.scanner.sample.R;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.net.Uri;
+import android.graphics.Point;
 import android.os.Bundle;
-import android.os.Environment;
 import android.util.Log;
+import android.view.Display;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import com.aliya.scanner.client.Contents;
+import com.aliya.scanner.client.FinishListener;
+import com.aliya.scanner.client.Intents;
+import com.aliya.scanner.sample.R;
+import com.google.zxing.WriterException;
+
 import java.util.regex.Pattern;
 
 /**
@@ -95,9 +90,6 @@ public final class EncodeActivity extends Activity {
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
     switch (item.getItemId()) {
-      case R.id.menu_share:
-        share();
-        return true;
       case R.id.menu_encode:
         Intent intent = getIntent();
         if (intent == null) {
@@ -111,67 +103,6 @@ public final class EncodeActivity extends Activity {
       default:
         return false;
     }
-  }
-  
-  private void share() {
-    QRCodeEncoder encoder = qrCodeEncoder;
-    if (encoder == null) { // Odd
-      Log.w(TAG, "No existing barcode to send?");
-      return;
-    }
-
-    String contents = encoder.getContents();
-    if (contents == null) {
-      Log.w(TAG, "No existing barcode to send?");
-      return;
-    }
-
-    Bitmap bitmap;
-    try {
-      bitmap = encoder.encodeAsBitmap();
-    } catch (WriterException we) {
-      Log.w(TAG, we);
-      return;
-    }
-    if (bitmap == null) {
-      return;
-    }
-
-    File bsRoot = new File(Environment.getExternalStorageDirectory(), "BarcodeScanner");
-    File barcodesRoot = new File(bsRoot, "Barcodes");
-    if (!barcodesRoot.exists() && !barcodesRoot.mkdirs()) {
-      Log.w(TAG, "Couldn't make dir " + barcodesRoot);
-      showErrorMessage(R.string.msg_unmount_usb);
-      return;
-    }
-    File barcodeFile = new File(barcodesRoot, makeBarcodeFileName(contents) + ".png");
-    if (!barcodeFile.delete()) {
-      Log.w(TAG, "Could not delete " + barcodeFile);
-      // continue anyway
-    }
-    try (FileOutputStream fos = new FileOutputStream(barcodeFile)) {
-      bitmap.compress(Bitmap.CompressFormat.PNG, 0, fos);
-    } catch (IOException ioe) {
-      Log.w(TAG, "Couldn't access file " + barcodeFile + " due to " + ioe);
-      showErrorMessage(R.string.msg_unmount_usb);
-      return;
-    }
-
-    Intent intent = new Intent(Intent.ACTION_SEND, Uri.parse("mailto:"));
-    intent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.app_name) + " - " + encoder.getTitle());
-    intent.putExtra(Intent.EXTRA_TEXT, contents);
-    intent.putExtra(Intent.EXTRA_STREAM, Uri.parse("file://" + barcodeFile.getAbsolutePath()));
-    intent.setType("image/png");
-    intent.addFlags(Intents.FLAG_NEW_DOC);
-    startActivity(Intent.createChooser(intent, null));
-  }
-
-  private static CharSequence makeBarcodeFileName(CharSequence contents) {
-    String fileName = NOT_ALPHANUMERIC.matcher(contents).replaceAll("_");
-    if (fileName.length() > MAX_BARCODE_FILENAME_LENGTH) {
-      fileName = fileName.substring(0, MAX_BARCODE_FILENAME_LENGTH);
-    }
-    return fileName;
   }
 
   @Override

@@ -21,7 +21,6 @@ import android.text.Html;
 import android.widget.TextView;
 import com.aliya.scanner.client.HttpHelper;
 import com.aliya.scanner.sample.R;
-import com.aliya.scanner.client.history.HistoryManager;
 import com.aliya.scanner.client.LocaleManager;
 
 import java.io.IOException;
@@ -48,8 +47,8 @@ final class ProductResultInfoRetriever extends SupplementalInfoRetriever {
   private final String source;
   private final Context context;
 
-  ProductResultInfoRetriever(TextView textView, String productID, HistoryManager historyManager, Context context) {
-    super(textView, historyManager);
+  ProductResultInfoRetriever(TextView textView, String productID, Context context) {
+    super(textView);
     this.productID = productID;
     this.source = context.getString(R.string.msg_google_product);
     this.context = context;

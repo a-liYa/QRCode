@@ -16,23 +16,6 @@
 
 package com.aliya.scanner.client;
 
-import com.aliya.scanner.sample.R;
-import com.google.zxing.BarcodeFormat;
-import com.google.zxing.DecodeHintType;
-import com.google.zxing.Result;
-import com.google.zxing.ResultMetadataType;
-import com.google.zxing.ResultPoint;
-import com.aliya.scanner.client.camera.CameraManager;
-import com.aliya.scanner.client.clipboard.ClipboardInterface;
-import com.aliya.scanner.client.history.HistoryActivity;
-import com.aliya.scanner.client.history.HistoryItem;
-import com.aliya.scanner.client.history.HistoryManager;
-import com.aliya.scanner.client.result.ResultButtonListener;
-import com.aliya.scanner.client.result.ResultHandler;
-import com.aliya.scanner.client.result.ResultHandlerFactory;
-import com.aliya.scanner.client.result.supplement.SupplementalInfoRetriever;
-import com.aliya.scanner.client.share.ShareActivity;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
@@ -65,6 +48,19 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.aliya.scanner.client.camera.CameraManager;
+import com.aliya.scanner.client.clipboard.ClipboardInterface;
+import com.aliya.scanner.client.result.ResultButtonListener;
+import com.aliya.scanner.client.result.ResultHandler;
+import com.aliya.scanner.client.result.ResultHandlerFactory;
+import com.aliya.scanner.client.result.supplement.SupplementalInfoRetriever;
+import com.aliya.scanner.sample.R;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.DecodeHintType;
+import com.google.zxing.Result;
+import com.google.zxing.ResultMetadataType;
+import com.google.zxing.ResultPoint;
+
 import java.io.IOException;
 import java.text.DateFormat;
 import java.util.Collection;
@@ -88,8 +84,6 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
 
   private static final String[] ZXING_URLS = { "http://zxing.appspot.com/scan", "zxing://scan/" };
 
-  private static final int HISTORY_REQUEST_CODE = 0x0000bacc;
-
   private static final Collection<ResultMetadataType> DISPLAYABLE_METADATA_TYPES =
       EnumSet.of(ResultMetadataType.ISSUE_NUMBER,
                  ResultMetadataType.SUGGESTED_PRICE,
@@ -111,7 +105,6 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
   private Collection<BarcodeFormat> decodeFormats;
   private Map<DecodeHintType,?> decodeHints;
   private String characterSet;
-  private HistoryManager historyManager;
   private InactivityTimer inactivityTimer;
   private BeepManager beepManager;
   private AmbientLightManager ambientLightManager;
@@ -148,10 +141,6 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
   protected void onResume() {
     super.onResume();
     
-    // historyManager must be initialized here to update the history preference
-    historyManager = new HistoryManager(this);
-    historyManager.trimHistory();
-
     // CameraManager must be initialized here, not in onCreate(). This is necessary because we don't
     // want to open the camera driver and measure the screen size if we're going to show the help on
     // first launch. That led to bugs where the scanning rectangle was the wrong size and partially
@@ -364,37 +353,14 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
     Intent intent = new Intent(Intent.ACTION_VIEW);
     intent.addFlags(Intents.FLAG_NEW_DOC);
     switch (item.getItemId()) {
-      case R.id.menu_share:
-        intent.setClassName(this, ShareActivity.class.getName());
-        startActivity(intent);
-        break;
-      case R.id.menu_history:
-        intent.setClassName(this, HistoryActivity.class.getName());
-        startActivityForResult(intent, HISTORY_REQUEST_CODE);
-        break;
       case R.id.menu_settings:
         intent.setClassName(this, PreferencesActivity.class.getName());
-        startActivity(intent);
-        break;
-      case R.id.menu_help:
-        intent.setClassName(this, HelpActivity.class.getName());
         startActivity(intent);
         break;
       default:
         return super.onOptionsItemSelected(item);
     }
     return true;
-  }
-
-  @Override
-  public void onActivityResult(int requestCode, int resultCode, Intent intent) {
-    if (resultCode == RESULT_OK && requestCode == HISTORY_REQUEST_CODE && historyManager != null) {
-      int itemNumber = intent.getIntExtra(Intents.History.ITEM_NUMBER, -1);
-      if (itemNumber >= 0) {
-        HistoryItem historyItem = historyManager.buildHistoryItem(itemNumber);
-        decodeOrStoreSavedBitmap(null, historyItem.getResult());
-      }
-    }
   }
 
   private void decodeOrStoreSavedBitmap(Bitmap bitmap, Result result) {
@@ -448,7 +414,6 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
 
     boolean fromLiveScan = barcode != null;
     if (fromLiveScan) {
-      historyManager.addHistoryItem(rawResult, resultHandler);
       // Then not from history, so beep/vibrate and we have an image to draw on
       beepManager.playBeepSoundAndVibrate();
       drawResultPoints(barcode, scaleFactor, rawResult);
@@ -593,7 +558,6 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
         PreferencesActivity.KEY_SUPPLEMENTAL, true)) {
       SupplementalInfoRetriever.maybeInvokeRetrieval(supplementTextView,
                                                      resultHandler.getResult(),
-                                                     historyManager,
                                                      this);
     }
 

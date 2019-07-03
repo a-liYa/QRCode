@@ -107,14 +107,6 @@
                 <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
         </activity>
-        <activity android:name="com.aliya.scanner.client.share.ShareActivity"
-            android:stateNotNeeded="true"
-            android:screenOrientation="user">
-            <intent-filter>
-                <action android:name="com.google.zxing.client.android.SHARE"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-            </intent-filter>
-        </activity>
         <activity android:name="com.aliya.scanner.client.history.HistoryActivity"
             android:label="@string/history_title"
             android:stateNotNeeded="true"/>
@@ -124,10 +116,5 @@
         <activity android:name="com.aliya.scanner.client.share.AppPickerActivity"
             android:label="@string/app_picker_name"
             android:stateNotNeeded="true"/>
-        <activity android:name="com.aliya.scanner.client.HelpActivity"
-            android:label="@string/menu_help"
-            android:screenOrientation="user"
-            android:stateNotNeeded="true"/>
     </application>
-
 </manifest>
