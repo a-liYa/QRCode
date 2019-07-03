@@ -1,49 +1,33 @@
 package com.aliya.scanner.sample;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.os.Build;
+import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
-import android.widget.ImageView;
 
-import com.aliya.scanner.QRCode;
+import com.aliya.scanner.client.CaptureActivity;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
-
-    ImageView mIvQRCode;
-    ImageView mIvQRCode_;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mIvQRCode = findViewById(R.id.iv_qrcode);
-        mIvQRCode_ = findViewById(R.id.iv_qrcode_);
-        mIvQRCode.setOnClickListener(this);
+        findViewById(R.id.tv_qrcode).setOnClickListener(this);
+        findViewById(R.id.tv_qrcode_create).setOnClickListener(this);
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.iv_qrcode:
-                Bitmap qrCode = new QRCode("http://www.baidu.com", 800, 800)
-                        .setMargin(0)
-                        .createQRCode();
-                mIvQRCode.setImageBitmap(qrCode);
-
-                Bitmap logo  = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_a_liya);
-                Log.e("TAG", "onClick: " + logo);
-                mIvQRCode_.setImageBitmap(new QRCode("1", 800, 800)
-                        .setMargin(0)
-                        .setVersion(15)
-//                        .setLogoBitmap(logo)
-                        .createQRCode());
+            case R.id.tv_qrcode:
+                startActivity(new Intent(this, CaptureActivity.class));
+                break;
+            case R.id.tv_qrcode_create:
+//                Intent intent = new Intent(this, BookmarkPickerActivity.class);
+//                intent.setAction(Intent.ACTION_SEND);
+//                startActivity(intent);
                 break;
         }
     }
