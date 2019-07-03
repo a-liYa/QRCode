@@ -16,7 +16,7 @@ import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 import java.util.Hashtable;
 
 /**
- * QRCode
+ * QRCode, 用于生成二维码
  *
  * @author a_liYa
  * @date 2019-06-18 16:36.
