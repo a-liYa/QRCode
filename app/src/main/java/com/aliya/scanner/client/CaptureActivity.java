@@ -49,7 +49,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.aliya.scanner.client.camera.CameraManager;
-import com.aliya.scanner.client.clipboard.ClipboardInterface;
 import com.aliya.scanner.client.result.ResultButtonListener;
 import com.aliya.scanner.client.result.ResultHandler;
 import com.aliya.scanner.client.result.ResultHandlerFactory;
@@ -98,7 +97,6 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
   private View resultView;
   private Result lastResult;
   private boolean hasSurface;
-  private boolean copyToClipboard;
   private IntentSource source;
   private String sourceUrl;
   private ScanFromWebPageManager scanFromWebPageManager;
@@ -108,6 +106,8 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
   private InactivityTimer inactivityTimer;
   private BeepManager beepManager;
   private AmbientLightManager ambientLightManager;
+
+  private String mFrontLightMode;
 
   ViewfinderView getViewfinderView() {
     return viewfinderView;
@@ -132,7 +132,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
     hasSurface = false;
     inactivityTimer = new InactivityTimer(this);
     beepManager = new BeepManager(this);
-    ambientLightManager = new AmbientLightManager(this);
+    ambientLightManager = new AmbientLightManager(this, mFrontLightMode);
 
     PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
   }
@@ -173,9 +173,6 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
     inactivityTimer.onResume();
 
     Intent intent = getIntent();
-
-    copyToClipboard = prefs.getBoolean(PreferencesActivity.KEY_COPY_TO_CLIPBOARD, true)
-        && (intent == null || intent.getBooleanExtra(Intents.Scan.SAVE_HISTORY, true));
 
     source = IntentSource.NONE;
     sourceUrl = null;
@@ -437,7 +434,6 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
           Toast.makeText(getApplicationContext(),
                          getResources().getString(R.string.msg_bulk_mode_scanned) + " (" + rawResult.getText() + ')',
                          Toast.LENGTH_SHORT).show();
-          maybeSetClipboard(resultHandler);
           // Wait a moment or else it will scan the same barcode continuously about 3 times
           restartPreviewAfterDelay(BULK_MODE_SCAN_DELAY_MS);
         } else {
@@ -492,8 +488,6 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
 
   // Put up our own UI for how to handle the decoded contents.
   private void handleDecodeInternally(Result rawResult, ResultHandler resultHandler, Bitmap barcode) {
-
-    maybeSetClipboard(resultHandler);
 
     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
@@ -600,8 +594,6 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
       statusView.setText(getString(resultHandler.getDisplayTitle()) + " : " + rawResultString);
     }
 
-    maybeSetClipboard(resultHandler);
-
     switch (source) {
       case NATIVE_APP_INTENT:
         // Hand back whatever action they requested - this can be changed to Intents.Scan.ACTION when
@@ -660,12 +652,6 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
     }
   }
 
-  private void maybeSetClipboard(ResultHandler resultHandler) {
-    if (copyToClipboard && !resultHandler.areContentsSecure()) {
-      ClipboardInterface.setText(resultHandler.getDisplayContents(), this);
-    }
-  }
-  
   private void sendReplyMessage(int id, Object arg, long delayMS) {
     if (handler != null) {
       Message message = Message.obtain(handler, id, arg);

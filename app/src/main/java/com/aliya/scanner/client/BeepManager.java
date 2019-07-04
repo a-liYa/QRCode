@@ -18,12 +18,10 @@ package com.aliya.scanner.client;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.content.res.AssetFileDescriptor;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Vibrator;
-import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.aliya.scanner.sample.R;
@@ -43,8 +41,8 @@ final class BeepManager implements MediaPlayer.OnErrorListener, Closeable {
 
   private final Activity activity;
   private MediaPlayer mediaPlayer;
-  private boolean playBeep;
-  private boolean vibrate;
+  private boolean playBeep = true;
+  private boolean vibrate = true;
 
   BeepManager(Activity activity) {
     this.activity = activity;
@@ -53,9 +51,7 @@ final class BeepManager implements MediaPlayer.OnErrorListener, Closeable {
   }
 
   synchronized void updatePrefs() {
-    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(activity);
-    playBeep = shouldBeep(prefs, activity);
-    vibrate = prefs.getBoolean(PreferencesActivity.KEY_VIBRATE, false);
+    playBeep = shouldBeep(activity);
     if (playBeep && mediaPlayer == null) {
       // The volume on STREAM_SYSTEM is not adjustable, and users found it too loud,
       // so we now play on the music stream.
@@ -74,21 +70,16 @@ final class BeepManager implements MediaPlayer.OnErrorListener, Closeable {
     }
   }
 
-  private static boolean shouldBeep(SharedPreferences prefs, Context activity) {
-    boolean shouldPlayBeep = prefs.getBoolean(PreferencesActivity.KEY_PLAY_BEEP, true);
-    if (shouldPlayBeep) {
+  private static boolean shouldBeep(Context activity) {
       // See if sound settings overrides this
       AudioManager audioService = (AudioManager) activity.getSystemService(Context.AUDIO_SERVICE);
-      if (audioService.getRingerMode() != AudioManager.RINGER_MODE_NORMAL) {
-        shouldPlayBeep = false;
-      }
-    }
-    return shouldPlayBeep;
+      return audioService.getRingerMode() == AudioManager.RINGER_MODE_NORMAL;
   }
 
   private MediaPlayer buildMediaPlayer(Context activity) {
     MediaPlayer mediaPlayer = new MediaPlayer();
-    try (AssetFileDescriptor file = activity.getResources().openRawResourceFd(R.raw.beep)) {
+    try {
+      AssetFileDescriptor file = activity.getResources().openRawResourceFd(R.raw.beep);
       mediaPlayer.setDataSource(file.getFileDescriptor(), file.getStartOffset(), file.getLength());
       mediaPlayer.setOnErrorListener(this);
       mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);

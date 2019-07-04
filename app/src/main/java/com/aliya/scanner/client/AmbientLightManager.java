@@ -17,12 +17,11 @@
 package com.aliya.scanner.client;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.preference.PreferenceManager;
+
 import com.aliya.scanner.client.camera.CameraManager;
 import com.aliya.scanner.client.camera.FrontLightMode;
 
@@ -40,15 +39,19 @@ final class AmbientLightManager implements SensorEventListener {
   private final Context context;
   private CameraManager cameraManager;
   private Sensor lightSensor;
+  private FrontLightMode mFrontLightMode = FrontLightMode.AUTO;
 
-  AmbientLightManager(Context context) {
+  AmbientLightManager(Context context, String mode) {
     this.context = context;
+    try {
+      mFrontLightMode = FrontLightMode.valueOf(mode);
+    } catch (IllegalArgumentException e) {
+    }
   }
 
   void start(CameraManager cameraManager) {
     this.cameraManager = cameraManager;
-    SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
-    if (FrontLightMode.readPref(sharedPrefs) == FrontLightMode.AUTO) {
+    if (mFrontLightMode == FrontLightMode.AUTO) {
       SensorManager sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
       lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
       if (lightSensor != null) {
