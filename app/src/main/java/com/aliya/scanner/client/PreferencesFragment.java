@@ -50,13 +50,7 @@ public final class PreferencesFragment
     
     PreferenceScreen preferences = getPreferenceScreen();
     preferences.getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
-    checkBoxPrefs = findDecodePrefs(preferences,
-                                    PreferencesActivity.KEY_DECODE_1D_PRODUCT,
-                                    PreferencesActivity.KEY_DECODE_1D_INDUSTRIAL,
-                                    PreferencesActivity.KEY_DECODE_QR,
-                                    PreferencesActivity.KEY_DECODE_DATA_MATRIX,
-                                    PreferencesActivity.KEY_DECODE_AZTEC,
-                                    PreferencesActivity.KEY_DECODE_PDF417);
+//    checkBoxPrefs = findDecodePrefs(preferences);
     disableLastCheckedPref();
 
     EditTextPreference customProductSearch = (EditTextPreference)

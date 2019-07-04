@@ -20,8 +20,6 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.ActivityInfo;
-import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -37,7 +35,6 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
@@ -133,8 +130,6 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
     inactivityTimer = new InactivityTimer(this);
     beepManager = new BeepManager(this);
     ambientLightManager = new AmbientLightManager(this, mFrontLightMode);
-
-    PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
   }
 
   @Override
@@ -156,16 +151,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
     handler = null;
     lastResult = null;
 
-    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-
-    if (prefs.getBoolean(PreferencesActivity.KEY_DISABLE_AUTO_ORIENTATION, true)) {
-      setRequestedOrientation(getCurrentOrientation());
-    } else {
-      setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
-    }
-
     resetStatusView();
-
 
     beepManager.updatePrefs();
     ambientLightManager.start(cameraManager);
@@ -251,27 +237,6 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
     }
   }
 
-  private int getCurrentOrientation() {
-    int rotation = getWindowManager().getDefaultDisplay().getRotation();
-    if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-      switch (rotation) {
-        case Surface.ROTATION_0:
-        case Surface.ROTATION_90:
-          return ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
-        default:
-          return ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE;
-      }
-    } else {
-      switch (rotation) {
-        case Surface.ROTATION_0:
-        case Surface.ROTATION_270:
-          return ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
-        default:
-          return ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT;
-      }
-    }
-  }
-  
   private static boolean isZXingURL(String dataString) {
     if (dataString == null) {
       return false;
@@ -378,9 +343,6 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
 
   @Override
   public void surfaceCreated(SurfaceHolder holder) {
-    if (holder == null) {
-      Log.e(TAG, "*** WARNING *** surfaceCreated() gave us a null surface!");
-    }
     if (!hasSurface) {
       hasSurface = true;
       initCamera(holder);
@@ -668,7 +630,6 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
       throw new IllegalStateException("No SurfaceHolder provided");
     }
     if (cameraManager.isOpen()) {
-      Log.w(TAG, "initCamera() while already open -- late SurfaceView callback?");
       return;
     }
     try {
@@ -679,12 +640,10 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
       }
       decodeOrStoreSavedBitmap(null, null);
     } catch (IOException ioe) {
-      Log.w(TAG, ioe);
       displayFrameworkBugMessageAndExit();
     } catch (RuntimeException e) {
       // Barcode Scanner has seen crashes in the wild of this variety:
       // java.?lang.?RuntimeException: Fail to connect to camera service
-      Log.w(TAG, "Unexpected error initializing camera", e);
       displayFrameworkBugMessageAndExit();
     }
   }

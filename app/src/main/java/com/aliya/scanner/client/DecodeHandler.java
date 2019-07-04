@@ -17,6 +17,10 @@
 package com.aliya.scanner.client;
 
 import android.graphics.Bitmap;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 
 import com.aliya.scanner.sample.R;
 import com.google.zxing.BinaryBitmap;
@@ -27,15 +31,8 @@ import com.google.zxing.ReaderException;
 import com.google.zxing.Result;
 import com.google.zxing.common.HybridBinarizer;
 
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
-import android.util.Log;
-
 import java.io.ByteArrayOutputStream;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 final class DecodeHandler extends Handler {
 
@@ -94,7 +91,6 @@ final class DecodeHandler extends Handler {
     if (rawResult != null) {
       // Don't log the barcode contents for security.
       long end = System.nanoTime();
-      Log.d(TAG, "Found barcode in " + TimeUnit.NANOSECONDS.toMillis(end - start) + " ms");
       if (handler != null) {
         Message message = Message.obtain(handler, R.id.decode_succeeded, rawResult);
         Bundle bundle = new Bundle();

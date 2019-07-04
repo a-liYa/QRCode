@@ -22,7 +22,6 @@ import android.content.res.AssetFileDescriptor;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Vibrator;
-import android.util.Log;
 
 import com.aliya.scanner.sample.R;
 
@@ -33,8 +32,6 @@ import java.io.IOException;
  * Manages beeps and vibrations for {@link CaptureActivity}.
  */
 final class BeepManager implements MediaPlayer.OnErrorListener, Closeable {
-
-  private static final String TAG = BeepManager.class.getSimpleName();
 
   private static final float BEEP_VOLUME = 0.10f;
   private static final long VIBRATE_DURATION = 200L;
@@ -88,7 +85,6 @@ final class BeepManager implements MediaPlayer.OnErrorListener, Closeable {
       mediaPlayer.prepare();
       return mediaPlayer;
     } catch (IOException ioe) {
-      Log.w(TAG, ioe);
       mediaPlayer.release();
       return null;
     }
@@ -114,5 +110,4 @@ final class BeepManager implements MediaPlayer.OnErrorListener, Closeable {
       mediaPlayer = null;
     }
   }
-
 }
