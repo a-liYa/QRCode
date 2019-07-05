@@ -29,12 +29,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.KeyEvent;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
@@ -43,7 +39,6 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.aliya.scanner.client.camera.CameraManager;
 import com.aliya.scanner.client.result.ResultButtonListener;
@@ -73,12 +68,7 @@ import java.util.Map;
  */
 public final class CaptureActivity extends Activity implements SurfaceHolder.Callback {
 
-  private static final String TAG = CaptureActivity.class.getSimpleName();
-
   private static final long DEFAULT_INTENT_RESULT_DURATION_MS = 1500L;
-  private static final long BULK_MODE_SCAN_DELAY_MS = 1000L;
-
-  private static final String[] ZXING_URLS = { "http://zxing.appspot.com/scan", "zxing://scan/" };
 
   private static final Collection<ResultMetadataType> DISPLAYABLE_METADATA_TYPES =
       EnumSet.of(ResultMetadataType.ISSUE_NUMBER,
@@ -169,7 +159,6 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
     if (intent != null) {
 
       String action = intent.getAction();
-      String dataString = intent.getDataString();
 
       if (Intents.Scan.ACTION.equals(action)) {
 
@@ -198,31 +187,9 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
           statusView.setText(customPromptMessage);
         }
 
-      } else if (dataString != null &&
-                 dataString.contains("http://www.google") &&
-                 dataString.contains("/m/products/scan")) {
-
-        // Scan only products and send the result to mobile Product Search.
-        source = IntentSource.PRODUCT_SEARCH_LINK;
-        sourceUrl = dataString;
-        decodeFormats = DecodeFormatManager.PRODUCT_FORMATS;
-
-      } else if (isZXingURL(dataString)) {
-
-        // Scan formats requested in query string (all formats if none specified).
-        // If a return URL is specified, send the results there. Otherwise, handle it ourselves.
-        source = IntentSource.ZXING_LINK;
-        sourceUrl = dataString;
-        Uri inputUri = Uri.parse(dataString);
-        scanFromWebPageManager = new ScanFromWebPageManager(inputUri);
-        decodeFormats = DecodeFormatManager.parseDecodeFormats(inputUri);
-        // Allow a sub-set of the hints to be specified by the caller.
-        decodeHints = DecodeHintManager.parseDecodeHints(inputUri);
-
       }
 
       characterSet = intent.getStringExtra(Intents.Scan.CHARACTER_SET);
-
     }
 
     SurfaceView surfaceView = (SurfaceView) findViewById(R.id.preview_view);
@@ -235,18 +202,6 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
       // Install the callback and wait for surfaceCreated() to init the camera.
       surfaceHolder.addCallback(this);
     }
-  }
-
-  private static boolean isZXingURL(String dataString) {
-    if (dataString == null) {
-      return false;
-    }
-    for (String url : ZXING_URLS) {
-      if (dataString.startsWith(url)) {
-        return true;
-      }
-    }
-    return false;
   }
 
   @Override
@@ -304,44 +259,6 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
   }
 
   @Override
-  public boolean onCreateOptionsMenu(Menu menu) {
-    MenuInflater menuInflater = getMenuInflater();
-    menuInflater.inflate(R.menu.capture, menu);
-    return super.onCreateOptionsMenu(menu);
-  }
-
-  @Override
-  public boolean onOptionsItemSelected(MenuItem item) {
-    Intent intent = new Intent(Intent.ACTION_VIEW);
-    intent.addFlags(Intents.FLAG_NEW_DOC);
-    switch (item.getItemId()) {
-      case R.id.menu_settings:
-        intent.setClassName(this, PreferencesActivity.class.getName());
-        startActivity(intent);
-        break;
-      default:
-        return super.onOptionsItemSelected(item);
-    }
-    return true;
-  }
-
-  private void decodeOrStoreSavedBitmap(Bitmap bitmap, Result result) {
-    // Bitmap isn't used yet -- will be used soon
-    if (handler == null) {
-      savedResultToShow = result;
-    } else {
-      if (result != null) {
-        savedResultToShow = result;
-      }
-      if (savedResultToShow != null) {
-        Message message = Message.obtain(handler, R.id.decode_succeeded, savedResultToShow);
-        handler.sendMessage(message);
-      }
-      savedResultToShow = null;
-    }
-  }
-
-  @Override
   public void surfaceCreated(SurfaceHolder holder) {
     if (!hasSurface) {
       hasSurface = true;
@@ -371,12 +288,8 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
     lastResult = rawResult;
     ResultHandler resultHandler = ResultHandlerFactory.makeResultHandler(this, rawResult);
 
-    boolean fromLiveScan = barcode != null;
-    if (fromLiveScan) {
-      // Then not from history, so beep/vibrate and we have an image to draw on
-      beepManager.playBeepSoundAndVibrate();
-      drawResultPoints(barcode, scaleFactor, rawResult);
-    }
+    beepManager.playBeepSoundAndVibrate();
+    drawResultPoints(barcode, scaleFactor, rawResult);
 
     switch (source) {
       case NATIVE_APP_INTENT:
@@ -391,16 +304,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
         }
         break;
       case NONE:
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        if (fromLiveScan && prefs.getBoolean(PreferencesActivity.KEY_BULK_MODE, false)) {
-          Toast.makeText(getApplicationContext(),
-                         getResources().getString(R.string.msg_bulk_mode_scanned) + " (" + rawResult.getText() + ')',
-                         Toast.LENGTH_SHORT).show();
-          // Wait a moment or else it will scan the same barcode continuously about 3 times
-          restartPreviewAfterDelay(BULK_MODE_SCAN_DELAY_MS);
-        } else {
-          handleDecodeInternally(rawResult, resultHandler, barcode);
-        }
+        handleDecodeInternally(rawResult, resultHandler, barcode);
         break;
     }
   }
@@ -638,7 +542,6 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
       if (handler == null) {
         handler = new CaptureActivityHandler(this, decodeFormats, decodeHints, characterSet, cameraManager);
       }
-      decodeOrStoreSavedBitmap(null, null);
     } catch (IOException ioe) {
       displayFrameworkBugMessageAndExit();
     } catch (RuntimeException e) {

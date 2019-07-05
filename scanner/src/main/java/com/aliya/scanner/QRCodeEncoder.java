@@ -17,12 +17,12 @@ import java.util.Hashtable;
 import java.util.Map;
 
 /**
- * QRCode, 用于生成二维码
+ * QRCodeEncoder, 用于生成二维码
  *
  * @author a_liYa
  * @date 2019-06-18 16:36.
  */
-public class QRCode {
+public class QRCodeEncoder {
 
     private String mContent;
     private int mWidth;
@@ -41,7 +41,7 @@ public class QRCode {
 
     private Bitmap mBitmapBlack;
 
-    public QRCode(String content, int width, int height) {
+    public QRCodeEncoder(String content, int width, int height) {
         this.mContent = content;
         this.mWidth = width;
         this.mHeight = height;
@@ -52,7 +52,7 @@ public class QRCode {
      * @param version [1, 40]
      * @return this
      */
-    public QRCode setVersion(int version) {
+    public QRCodeEncoder setVersion(int version) {
         if (version >= 1 && version <= 40)
             mVersion = version;
         return this;
@@ -61,12 +61,12 @@ public class QRCode {
     /*
      * 单位像素，实际并非如此
      */
-    public QRCode setMargin(int margin) {
+    public QRCodeEncoder setMargin(int margin) {
         this.mMargin = margin;
         return this;
     }
 
-    public QRCode setCharacterSet(String characterSet) {
+    public QRCodeEncoder setCharacterSet(String characterSet) {
         this.mCharacterSet = characterSet;
         return this;
     }
@@ -77,38 +77,38 @@ public class QRCode {
      * @param errorCorrectionLevel 默认为H
      * @return this
      */
-    public QRCode setErrorCorrectionLevel(ErrorCorrectionLevel errorCorrectionLevel) {
+    public QRCodeEncoder setErrorCorrectionLevel(ErrorCorrectionLevel errorCorrectionLevel) {
         this.mErrorCorrectionLevel = errorCorrectionLevel;
         return this;
     }
 
-    public QRCode setColorBlack(@ColorInt int colorBlack) {
+    public QRCodeEncoder setColorBlack(@ColorInt int colorBlack) {
         this.mColorBlack = colorBlack;
         return this;
     }
 
-    public QRCode setColorWhite(@ColorInt int colorWhite) {
+    public QRCodeEncoder setColorWhite(@ColorInt int colorWhite) {
         this.mColorWhite = colorWhite;
         return this;
     }
 
-    public QRCode setConfig(Bitmap.Config config) {
+    public QRCodeEncoder setConfig(Bitmap.Config config) {
         if (config != null)
             mConfig = config;
         return this;
     }
 
-    public QRCode setLogoBitmap(Bitmap logoBitmap) {
+    public QRCodeEncoder setLogoBitmap(Bitmap logoBitmap) {
         mLogoBitmap = logoBitmap;
         return this;
     }
 
-    public QRCode setLogoScale(float logoScale) {
+    public QRCodeEncoder setLogoScale(float logoScale) {
         mLogoScale = logoScale;
         return this;
     }
 
-    public QRCode setBitmapBlack(Bitmap bitmapBlack) {
+    public QRCodeEncoder setBitmapBlack(Bitmap bitmapBlack) {
         mBitmapBlack = Bitmap.createScaledBitmap(bitmapBlack, mWidth, mHeight, false);
         return this;
     }

@@ -170,23 +170,7 @@ public final class Intents {
      */
     public static final String RESULT_BYTE_SEGMENTS_PREFIX = "SCAN_RESULT_BYTE_SEGMENTS_";
 
-    /**
-     * Setting this to false will not save scanned codes in the history. Specified as a {@code boolean}.
-     */
-    public static final String SAVE_HISTORY = "SAVE_HISTORY";
-
     private Scan() {
-    }
-  }
-
-  /**
-   * Constants related to the scan history and retrieving history items.
-   */
-  public static final class History {
-
-    public static final String ITEM_NUMBER = "ITEM_NUMBER";
-
-    private History() {
     }
   }
 
@@ -221,12 +205,6 @@ public final class Intents {
      */
     public static final String FORMAT = "ENCODE_FORMAT";
 
-    /**
-     * Normally the contents of the barcode are displayed to the user in a TextView. Setting this
-     * boolean to false will hide that TextView, showing only the encode barcode.
-     */
-    public static final String SHOW_CONTENTS = "ENCODE_SHOW_CONTENTS";
-
     private Encode() {
     }
   }
@@ -245,54 +223,7 @@ public final class Intents {
      */
     public static final String ISBN = "ISBN";
 
-    /**
-     * An optional field which is the text to search for.
-     */
-    public static final String QUERY = "QUERY";
-
     private SearchBookContents() {
-    }
-  }
-
-  /**
-   * Constants related to the {@link WifiConnect#ACTION} Intent.
-   */
-  public static final class WifiConnect {
-    /**
-     * Internal intent used to trigger connection to a wi-fi network.
-     */
-    public static final String ACTION = "com.aliya.scanner.client.WIFI_CONNECT";
-
-    /**
-     * The network to connect to, all the configuration provided here.
-     */
-    public static final String SSID = "SSID";
-
-    /**
-     * The network to connect to, all the configuration provided here.
-     */
-    public static final String TYPE = "TYPE";
-
-    /**
-     * The network to connect to, all the configuration provided here.
-     */
-    public static final String PASSWORD = "PASSWORD";
-
-    private WifiConnect() {
-    }
-  }
-
-  /**
-   * Constants related to the {@link Share#ACTION} Intent.
-   */
-  public static final class Share {
-    /**
-     * Give the user a choice of items to encode as a barcode, then render it as a QR Code and
-     * display onscreen for a friend to scan with their phone.
-     */
-    public static final String ACTION = "com.aliya.scanner.client.SHARE";
-
-    private Share() {
     }
   }
 
