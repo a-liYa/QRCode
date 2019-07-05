@@ -16,14 +16,12 @@
 
 package com.aliya.scanner.client;
 
+import android.os.Handler;
+import android.os.Looper;
+
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.DecodeHintType;
 import com.google.zxing.ResultPointCallback;
-
-import android.content.SharedPreferences;
-import android.os.Handler;
-import android.os.Looper;
-import android.preference.PreferenceManager;
 
 import java.util.Collection;
 import java.util.EnumMap;
